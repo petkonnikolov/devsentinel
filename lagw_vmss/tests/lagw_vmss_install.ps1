@@ -11,6 +11,5 @@ $source = 'https://go.microsoft.com/fwlink/?linkid=837444'
 $destination = 'c:\downloads\oms-gateway.msi'
 #Download the OMS Gateway file
 Invoke-WebRequest -Uri $source -OutFile $destination
-
 #Install OMS Gateway
-Start-Process msiexec.exe -Verb RunAs -Wait -ArgumentList 'Msiexec.exe /I "oms-gateway.msi" /qn PORTNUMBER=8080 LicenseAccepted=1'
+Start-Process msiexec.exe -Verb RunAs -Wait -ArgumentList '/I C:\downloads\oms-gateway.msi /qn PORTNUMBER=8080 LicenseAccepted=1'
