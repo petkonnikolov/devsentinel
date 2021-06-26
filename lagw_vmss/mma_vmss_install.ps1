@@ -1,7 +1,7 @@
 # Source file location
-$source = 'https://go.microsoft.com/fwlink/?linkid=837444'
+$source = 'https://go.microsoft.com/fwlink/?LinkId=828603'
 # Destination to save the file
-$destination = 'c:\downloads\oms gateway.msi'
+$destination = 'c:\downloads\mma-setup.exe'
 #Download the OMS Gateway file
 Invoke-WebRequest -Uri $source -OutFile $destination
 
