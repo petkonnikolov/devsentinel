@@ -1,0 +1,366 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachineScaleSets_vmss_2_name": {
+            "defaultValue": "vmss-2",
+            "type": "String"
+        },
+        "networkSecurityGroups_basicNsgvmss_vnet_nic01_externalid": {
+            "defaultValue": "/subscriptions/58b9fb5f-17ef-4826-bcb3-af88ba0dce1b/resourceGroups/vmss/providers/Microsoft.Network/networkSecurityGroups/basicNsgvmss-vnet-nic01",
+            "type": "String"
+        },
+        "virtualNetworks_vmss_vnet_externalid": {
+            "defaultValue": "/subscriptions/58b9fb5f-17ef-4826-bcb3-af88ba0dce1b/resourceGroups/vmss/providers/Microsoft.Network/virtualNetworks/vmss-vnet",
+            "type": "String"
+        },
+        "disks_vmss_2_vmss_2_0_OsDisk_1_6ae2ae7a06324c2db122cfc4d1afb009_externalid": {
+            "defaultValue": "/subscriptions/58b9fb5f-17ef-4826-bcb3-af88ba0dce1b/resourceGroups/vmss/providers/Microsoft.Compute/disks/vmss-2_vmss-2_0_OsDisk_1_6ae2ae7a06324c2db122cfc4d1afb009",
+            "type": "String"
+        },
+        "disks_vmss_2_vmss_2_1_OsDisk_1_d120353b0e8c462a92cbda37cc0d5b8e_externalid": {
+            "defaultValue": "/subscriptions/58b9fb5f-17ef-4826-bcb3-af88ba0dce1b/resourceGroups/vmss/providers/Microsoft.Compute/disks/vmss-2_vmss-2_1_OsDisk_1_d120353b0e8c462a92cbda37cc0d5b8e",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachineScaleSets",
+            "apiVersion": "2020-12-01",
+            "name": "[parameters('virtualMachineScaleSets_vmss_2_name')]",
+            "location": "westeurope",
+            "sku": {
+                "name": "Standard_DS1_v2",
+                "tier": "Standard",
+                "capacity": 2
+            },
+            "zones": [
+                "1"
+            ],
+            "properties": {
+                "singlePlacementGroup": true,
+                "upgradePolicy": {
+                    "mode": "Automatic"
+                },
+                "scaleInPolicy": {
+                    "rules": [
+                        "Default"
+                    ]
+                },
+                "virtualMachineProfile": {
+                    "osProfile": {
+                        "computerNamePrefix": "[concat(parameters('virtualMachineScaleSets_vmss_2_name'), '7qn')]",
+                        "adminUsername": "la-sentinel",
+                        "windowsConfiguration": {
+                            "provisionVMAgent": true,
+                            "enableAutomaticUpdates": true
+                        },
+                        "secrets": []
+                    },
+                    "storageProfile": {
+                        "osDisk": {
+                            "osType": "Windows",
+                            "createOption": "FromImage",
+                            "caching": "ReadWrite",
+                            "managedDisk": {
+                                "storageAccountType": "StandardSSD_LRS"
+                            },
+                            "diskSizeGB": 127
+                        },
+                        "imageReference": {
+                            "publisher": "MicrosoftWindowsServer",
+                            "offer": "WindowsServer",
+                            "sku": "2012-R2-Datacenter",
+                            "version": "latest"
+                        }
+                    },
+                    "networkProfile": {
+                        "networkInterfaceConfigurations": [
+                            {
+                                "name": "vmss-vnet-nic01",
+                                "properties": {
+                                    "primary": true,
+                                    "enableAcceleratedNetworking": false,
+                                    "networkSecurityGroup": {
+                                        "id": "[parameters('networkSecurityGroups_basicNsgvmss_vnet_nic01_externalid')]"
+                                    },
+                                    "dnsSettings": {
+                                        "dnsServers": []
+                                    },
+                                    "enableIPForwarding": false,
+                                    "ipConfigurations": [
+                                        {
+                                            "name": "vmss-vnet-nic01-defaultIpConfiguration",
+                                            "properties": {
+                                                "publicIPAddressConfiguration": {
+                                                    "name": "publicIp-vmss-vnet-nic01",
+                                                    "properties": {
+                                                        "idleTimeoutInMinutes": 15,
+                                                        "ipTags": [],
+                                                        "publicIPAddressVersion": "IPv4"
+                                                    }
+                                                },
+                                                "primary": true,
+                                                "subnet": {
+                                                    "id": "[concat(parameters('virtualNetworks_vmss_vnet_externalid'), '/subnets/default')]"
+                                                },
+                                                "privateIPAddressVersion": "IPv4"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "diagnosticsProfile": {
+                        "bootDiagnostics": {
+                            "enabled": true
+                        }
+                    },
+                    "extensionProfile": {
+                        "extensions": [
+                            {
+                                "name": "CustomScriptExtension",
+                                "properties": {
+                                    "autoUpgradeMinorVersion": true,
+                                    "publisher": "Microsoft.Compute",
+                                    "type": "CustomScriptExtension",
+                                    "typeHandlerVersion": "1.9",
+                                    "settings": {
+                                        "fileUris": [
+                                            "https://lagwstorage.blob.core.windows.net/lagwcontainer1/lagw_vmss_install.ps1?sp=r&se=2021-09-25T17:25:34Z&sv=2020-02-10&sr=b&sig=W5mPE20LCzwagtYhMGW%2BRMhV%2BPTG4DJdKGiZ6D2oNoc%3D"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "overprovision": false,
+                "doNotRunExtensionsOnOverprovisionedVMs": false,
+                "platformFaultDomainCount": 5
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachineScaleSets/extensions",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(parameters('virtualMachineScaleSets_vmss_2_name'), '/CustomScriptExtension')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('virtualMachineScaleSets_vmss_2_name'))]"
+            ],
+            "properties": {
+                "provisioningState": "Succeeded",
+                "autoUpgradeMinorVersion": true,
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.9",
+                "settings": {
+                    "fileUris": [
+                        "https://lagwstorage.blob.core.windows.net/lagwcontainer1/lagw_vmss_install.ps1?sp=r&se=2021-09-25T17:25:34Z&sv=2020-02-10&sr=b&sig=W5mPE20LCzwagtYhMGW%2BRMhV%2BPTG4DJdKGiZ6D2oNoc%3D"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachineScaleSets/virtualMachines",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(parameters('virtualMachineScaleSets_vmss_2_name'), '/0')]",
+            "location": "westeurope",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('virtualMachineScaleSets_vmss_2_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_DS1_v2",
+                "tier": "Standard"
+            },
+            "zones": [
+                "1"
+            ],
+            "properties": {
+                "networkProfileConfiguration": {
+                    "networkInterfaceConfigurations": [
+                        {
+                            "name": "vmss-vnet-nic01",
+                            "properties": {
+                                "primary": true,
+                                "enableAcceleratedNetworking": false,
+                                "networkSecurityGroup": {
+                                    "id": "[parameters('networkSecurityGroups_basicNsgvmss_vnet_nic01_externalid')]"
+                                },
+                                "dnsSettings": {
+                                    "dnsServers": []
+                                },
+                                "enableIPForwarding": false,
+                                "ipConfigurations": [
+                                    {
+                                        "name": "vmss-vnet-nic01-defaultIpConfiguration",
+                                        "properties": {
+                                            "publicIPAddressConfiguration": {
+                                                "name": "publicIp-vmss-vnet-nic01",
+                                                "properties": {
+                                                    "idleTimeoutInMinutes": 15,
+                                                    "ipTags": [],
+                                                    "publicIPAddressVersion": "IPv4"
+                                                }
+                                            },
+                                            "primary": true,
+                                            "subnet": {
+                                                "id": "[concat(parameters('virtualNetworks_vmss_vnet_externalid'), '/subnets/default')]"
+                                            },
+                                            "privateIPAddressVersion": "IPv4"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "hardwareProfile": {},
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2012-R2-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "vmss-2_vmss-2_0_OsDisk_1_6ae2ae7a06324c2db122cfc4d1afb009",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "StandardSSD_LRS",
+                            "id": "[parameters('disks_vmss_2_vmss_2_0_OsDisk_1_6ae2ae7a06324c2db122cfc4d1afb009_externalid')]"
+                        },
+                        "diskSizeGB": 127
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "vmss-27qn000000",
+                    "adminUsername": "la-sentinel",
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true,
+                    "requireGuestProvisionSignal": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/virtualMachines', parameters('virtualMachineScaleSets_vmss_2_name'), '0'), '/networkInterfaces/vmss-vnet-nic01')]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachineScaleSets/virtualMachines",
+            "apiVersion": "2020-12-01",
+            "name": "[concat(parameters('virtualMachineScaleSets_vmss_2_name'), '/1')]",
+            "location": "westeurope",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('virtualMachineScaleSets_vmss_2_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_DS1_v2",
+                "tier": "Standard"
+            },
+            "zones": [
+                "1"
+            ],
+            "properties": {
+                "networkProfileConfiguration": {
+                    "networkInterfaceConfigurations": [
+                        {
+                            "name": "vmss-vnet-nic01",
+                            "properties": {
+                                "primary": true,
+                                "enableAcceleratedNetworking": false,
+                                "networkSecurityGroup": {
+                                    "id": "[parameters('networkSecurityGroups_basicNsgvmss_vnet_nic01_externalid')]"
+                                },
+                                "dnsSettings": {
+                                    "dnsServers": []
+                                },
+                                "enableIPForwarding": false,
+                                "ipConfigurations": [
+                                    {
+                                        "name": "vmss-vnet-nic01-defaultIpConfiguration",
+                                        "properties": {
+                                            "publicIPAddressConfiguration": {
+                                                "name": "publicIp-vmss-vnet-nic01",
+                                                "properties": {
+                                                    "idleTimeoutInMinutes": 15,
+                                                    "ipTags": [],
+                                                    "publicIPAddressVersion": "IPv4"
+                                                }
+                                            },
+                                            "primary": true,
+                                            "subnet": {
+                                                "id": "[concat(parameters('virtualNetworks_vmss_vnet_externalid'), '/subnets/default')]"
+                                            },
+                                            "privateIPAddressVersion": "IPv4"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "hardwareProfile": {},
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2012-R2-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "vmss-2_vmss-2_1_OsDisk_1_d120353b0e8c462a92cbda37cc0d5b8e",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "StandardSSD_LRS",
+                            "id": "[parameters('disks_vmss_2_vmss_2_1_OsDisk_1_d120353b0e8c462a92cbda37cc0d5b8e_externalid')]"
+                        },
+                        "diskSizeGB": 127
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "vmss-27qn000001",
+                    "adminUsername": "la-sentinel",
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true,
+                    "requireGuestProvisionSignal": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/virtualMachines', parameters('virtualMachineScaleSets_vmss_2_name'), '1'), '/networkInterfaces/vmss-vnet-nic01')]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true
+                    }
+                }
+            }
+        }
+    ]
+}

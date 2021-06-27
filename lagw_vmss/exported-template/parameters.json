@@ -1,0 +1,21 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachineScaleSets_vmss_2_name": {
+            "value": null
+        },
+        "networkSecurityGroups_basicNsgvmss_vnet_nic01_externalid": {
+            "value": null
+        },
+        "virtualNetworks_vmss_vnet_externalid": {
+            "value": null
+        },
+        "disks_vmss_2_vmss_2_0_OsDisk_1_6ae2ae7a06324c2db122cfc4d1afb009_externalid": {
+            "value": null
+        },
+        "disks_vmss_2_vmss_2_1_OsDisk_1_d120353b0e8c462a92cbda37cc0d5b8e_externalid": {
+            "value": null
+        }
+    }
+}
