@@ -1,7 +1,7 @@
 "extensionProfile": {
     "extensions": [
       {
-        "name": "MMA Install",
+        "name": "OMS Install",
         "properties": {
           "publisher": "Microsoft.Azure.Extensions",
           "type": "CustomScript",
@@ -9,24 +9,9 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": [
-              "https://raw.githubusercontent.com/Azure-Samples/compute-automation-configurations/master/automate_nginx.sh"
+              "https://raw.githubusercontent.com/petkonnikolov/devsentinel/main/lagw_vmss/tests/lagw_vmss_install.ps1"
             ],
-            "commandToExecute": "bash automate_nginx.sh"
-          }
-        }
-      },
-      {
-        "name": " LAGW Install",
-        "properties": {
-          "publisher": "Microsoft.Azure.Extensions",
-          "type": "CustomScript",
-          "typeHandlerVersion": "2.0",
-          "autoUpgradeMinorVersion": true,
-          "settings": {
-            "fileUris": [
-              "https://raw.githubusercontent.com/Azure-Samples/compute-automation-configurations/master/automate_nginx.sh"
-            ],
-            "commandToExecute": "lagw_vmss_install.ps1"
+            "commandToExecute": "Get-Content lagw_vmss_install.ps1 | PowerShell.exe -noprofile -"
           }
         }
       }
