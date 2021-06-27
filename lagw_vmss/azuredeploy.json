@@ -11,11 +11,11 @@
         },
         "windowsOSVersion": {
             "type": "string",
-            "defaultValue": "2019-Datacenter",
+            "defaultValue": "2012-R2-Datacenter",
             "allowedValues": [
                 "2008-R2-SP1",
                 "2012-Datacenter",
-                "2012-R2-Datacenter",
+                "2019-Datacenter",
                 "2016-Datacenter",
                 "2019-Datacenter"
             ],
@@ -33,9 +33,9 @@
         },
         "instanceCount": {
             "type": "int",
-            "defaultValue": 3,
+            "defaultValue": 2,
             "minValue": 1,
-            "maxValue": 100,
+            "maxValue": 10,
             "metadata": {
                 "description": "Number of VM instances (100 or less)."
             }
@@ -60,20 +60,20 @@
                 "description": "Admin password on all VMs."
             }
         },
-        "_artifactsLocation": {
-            "type": "string",
-            "defaultValue": "[deployment().properties.templatelink.uri]",
-            "metadata": {
-                "description": "The base URI where artifacts required by this template are located. For example, if stored on a public GitHub repo, you'd use the following URI: https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/201-vmss-windows-webapp-dsc-autoscale/."
-            }
-        },
-        "_artifactsLocationSasToken": {
-            "type": "securestring",
-            "defaultValue": "",
-            "metadata": {
-                "description": "The sasToken required to access _artifactsLocation.  If your artifacts are stored on a public repo or public storage account you can leave this blank."
-            }
-        },
+//        "_artifactsLocation": {
+//            "type": "string",
+//            "defaultValue": "[deployment().properties.templatelink.uri]",
+//            "metadata": {
+//                "description": "The base URI where artifacts required by this template are located. For example, if stored on a public GitHub repo, you'd use the following URI: https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/201-vmss-windows-webapp-dsc-autoscale/."
+//            }
+//        },
+//        "_artifactsLocationSasToken": {
+//            "type": "securestring",
+//            "defaultValue": "",
+//            "metadata": {
+//                "description": "The sasToken required to access _artifactsLocation.  If your artifacts are stored on a public repo or public storage account you can leave this blank."
+//            }
+//        },
         "powershelldscZip": {
             "type": "string",
             "defaultValue": "DSC/InstallIIS.zip",
