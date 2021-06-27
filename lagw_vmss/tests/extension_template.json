@@ -11,7 +11,7 @@
             "fileUris": [
               "https://raw.githubusercontent.com/petkonnikolov/devsentinel/main/lagw_vmss/tests/lagw_vmss_install.ps1"
             ],
-            "commandToExecute": "Get-Content lagw_vmss_install.ps1 | PowerShell.exe -noprofile -"
+            "commandToExecute": "powershell -ExecutionPolicy Unrestricted -File lagw_vmss_install.ps1"
           }
         }
       }
