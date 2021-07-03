@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "newNsgName": {
-            "value": "VNet-1-nsg"
+            "value": "vnet-1-nsg"
         }
     }
 }
