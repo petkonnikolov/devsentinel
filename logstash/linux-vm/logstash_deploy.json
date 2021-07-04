@@ -2,145 +2,207 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-      "base_name": {
-        "type": "string"
-      },
-      "osDiskType": {
-        "type": "string",
-        "defaultValue": "Premium_LRS"
-      },
-      "virtualMachineSize": {
-        "type": "string",
-        "defaultValue": "Standard_DS1_v2",
-        "allowedValues": [
-          "Standard_F2s_v2",
-          "Standard_F4s_v2",
-          "Standard_F8s_v2"
-        ],
-        "metadata": {
-          "description": "Standard_DS1_v2 (1 CPU, 3.5 RAM), Standard_F2s_v2 (2 CPU, 4 RAM), Standard_F4s_v2 (4 CPU, 8 RAM), Standard_F8s_v2 (8 CPU, 16 RAM)"
+        "base_name": {
+            "type": "string"
+        },
+        "osDiskType": {
+            "type": "string",
+            "defaultValue": "Premium_LRS"
+        },
+        "VnetName": {
+            "type": "string",
+            "defaultValue": "vnet1"
+        },
+        "SNetName": {
+            "type": "string",
+            "defaultValue": "subnet1"
+        },
+        "virtualMachineSize": {
+            "type": "string",
+            "defaultValue": "Standard_DS1_v2",
+            "allowedValues": [
+                "Standard_DS1_v2",
+                "Standard_F2s_v2",
+                "Standard_F4s_v2",
+                "Standard_F8s_v2"
+            ],
+            "metadata": {
+                "description": "Standard_DS1_v2 (1 CPU, 3.5 RAM), Standard_F2s_v2 (2 CPU, 4 RAM), Standard_F4s_v2 (4 CPU, 8 RAM), Standard_F8s_v2 (8 CPU, 16 RAM)"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "defaultValue": "azureuser"
+        },
+        "adminPublicKey": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the SSH rsa public key file as a string. Use \"ssh-keygen -t rsa -b 2048\" to generate your SSH key pairs."
+            }
+        },
+        "workspaceId": {
+            "type": "string",
+            "defaultValue": "25ab00f1-b0a7-4022-b924-9c94a495b49f"
+        },
+        "workspaceKey": {
+            "type": "secureString"
         }
-      },
-      "adminUsername": {
-        "type": "string",
-        "defaultValue": "azureuser"
-      }
     },
     "variables": {
-      "networkInterfaceName": "[concat(parameters('base_name'), '-if')]",
-      "networkSecurityGroupName": "[concat(parameters('base_name'), 'nsg')]",
-      "nsgId": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]",
-      "vnetId": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks',resourceGroup().virtualNetworkName)]",
-      "subnetName": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks',resourceGroup().subnet1Name)]",
-      "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('subnetName'))]",
-      "location": "[resourceGroup().location]"
+        "networkInterfaceName": "[concat(parameters('base_name'), '-if')]",
+        "networkSecurityGroupName": "[concat(parameters('base_name'), '-nsg')]",
+        "publicIPAddressName": "[concat(parameters('base_name'), '-pip')]",
+        "nsgId": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]",
+        "vnetId": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks',parameters('VnetName'))]",
+        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('SNetName'))]",
+        "location": "[resourceGroup().location]"
     },
     "resources": [
-      {
-        "name": "[variables('networkInterfaceName')]",
-        "type": "Microsoft.Network/networkInterfaces",
-        "apiVersion": "2018-10-01",
-        "location": "[variables('location')]",
-        "dependsOn": [
-          "[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]"
-        ],
-        "properties": {
-          "ipConfigurations": [
-            {
-              "name": "ipconfig1",
-              "properties": {
-                "subnet": {
-                  "id": "[variables('subnetRef')]"
-                },
-                "privateIPAllocationMethod": "Dynamic"
-              }
+        {
+            "name": "[variables('networkInterfaceName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2018-10-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[variables('nsgId')]"
+                }
             }
-          ],
-          "networkSecurityGroup": {
-            "id": "[variables('nsgId')]"
-          }
-        }
-      },
-      {
-        "name": "[variables('networkSecurityGroupName')]",
-        "type": "Microsoft.Network/networkSecurityGroups",
-        "apiVersion": "2019-02-01",
-        "location": "[variables('location')]",
-        "properties": {
-          "securityRules": [
-            {
-              "name": "SSH",
-              "properties": {
-                "priority": 300,
-                "protocol": "TCP",
-                "access": "Allow",
-                "direction": "Inbound",
-                "sourceAddressPrefix": "*",
-                "sourcePortRange": "*",
-                "destinationAddressPrefix": "*",
-                "destinationPortRange": "22"
-              }
-            }
-          ]
-        }
-      },
-      {
-        "name": "[parameters('base_name')]",
-        "type": "Microsoft.Compute/virtualMachines",
-        "apiVersion": "2021-03-01",
-        "location": "[variables('location')]",
-        "dependsOn": [
-          "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
-        ],
-        "properties": {
-          "hardwareProfile": {
-            "vmSize": "[parameters('virtualMachineSize')]"
-          },
-          "storageProfile": {
-            "osDisk": {
-              "createOption": "fromImage",
-              "managedDisk": {
-                "storageAccountType": "[parameters('osDiskType')]"
-              }
-            },
-            "imageReference": {
-              "publisher": "procomputers",
-              "offer": "centos-8",
-              "sku": "centos-8",
-              "version": "latest"
-            }
-          },
-          "networkProfile": {
-            "networkInterfaces": [
-              {
-                "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
-              }
-            ]
-          },
-          "osProfile": {
-            "computerName": "[parameters('base_name')]",
-            "adminUsername": "[parameters('adminUsername')]",
-            "linuxConfiguration": {
-              "disablePasswordAuthentication": true
-            }
-          },
-          "diagnosticsProfile": {
-            "bootDiagnostics": {
-              "enabled": true
-            }
-          }
         },
-        "plan": {
-          "name": "centos-8",
-          "publisher": "procomputers",
-          "product": "centos-8"
+        {
+            "name": "[variables('networkSecurityGroupName')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-02-01",
+            "location": "[variables('location')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "SSH",
+                        "properties": {
+                            "priority": 300,
+                            "protocol": "TCP",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "22"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-05-01",
+            "name": "[variables('publicIPAddressName')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            },
+            "sku": {
+                "name": "Basic"
+            }
+        },
+        {
+            "name": "[parameters('base_name')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2021-03-01",
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('virtualMachineSize')]"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "createOption": "fromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[parameters('osDiskType')]"
+                        }
+                    },
+                    "imageReference": {
+                        "publisher": "RedHat",
+                        "offer": "RHEL",
+                        "sku": "8.2",
+                        "version": "latest"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+                        }
+                    ]
+                },
+                "osProfile": {
+                    "computerName": "[parameters('base_name')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+                                    "keyData": "[parameters('adminPublicKey')]"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('base_name'),'/OMSExtension')]",
+            "apiVersion": "2018-06-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('base_name'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.EnterpriseCloud.Monitoring",
+                "type": "OmsAgentForLinux",
+                "typeHandlerVersion": "1.13",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "workspaceId": "[parameters('workspaceId')]"
+                },
+                "protectedSettings": {
+                    "workspaceKey": "[parameters('workspaceKey')]"
+                }
+            }
         }
-      }
     ],
     "outputs": {
-      "adminUsername": {
-        "type": "string",
-        "value": "[parameters('adminUsername')]"
-      }
+        "adminUsername": {
+            "type": "string",
+            "value": "[parameters('adminUsername')]"
+        }
     }
-  }
+}

@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "base_name": {
+            "value": "logstash-vm"
+        },
+        "adminPublicKey": {
+            "value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDvlxHbxtgMttuLGSIsBw30x7CUAnKVJnRWQrJwzsXxPplxcI2pqYHWQxtnADp/Z5MTQ2S8gki5Zj6apaX9ZooPswh2Il/Q4HN9HBsKfLsqmyZQgD/tgWuKMVypvOB+80Ot2CB4F3v5DjqXsDB7Ukqyk3+z7mD1VUf0R+fWNK6ad7+PTi9WyTL7QmIlx+Zp8KGOBIixTnuXh2dzhRRtFs3Om/rl8m3V5l564blM13PTHfu3KAv0vD47K+6oejM9wc+zcOQ1obhlT8F0WJ381xBuobSlQ4gZw4smd1OnxElGpmShMBH6RocFliCYq4uoG338Gb6emif/7+TzmNhXGGvx pt@pt-lap"
+        },
+        "workspaceId": {
+            "value": "25ab00f1-b0a7-4022-b924-9c94a495b49f"
+        },
+        "workspaceKey": {
+            "value": "secureString"
+        }
+    }
+}
